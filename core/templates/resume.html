@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Resume Analyzer | CareerAI</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 1100px;
+            margin: 40px auto;
+        }
+
+        .header {
+            background: #111827;
+            color: white;
+            padding: 28px;
+            border-radius: 18px;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            margin: 0 0 8px;
+            font-size: 30px;
+        }
+
+        .header p {
+            margin: 0;
+            color: #d1d5db;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 22px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .upload-box {
+            text-align: center;
+        }
+
+        input[type="file"] {
+            margin: 15px 0;
+            padding: 10px;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 9px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .success {
+            background: #ecfdf5;
+            border: 1px solid #10b981;
+            color: #065f46;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .error {
+            background: #fef2f2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 30px;
+            font-weight: bold;
+            color: #2563eb;
+        }
+
+        .stat-label {
+            margin-top: 5px;
+            color: #6b7280;
+        }
+
+        .ai-card {
+            border: 2px solid #7c3aed;
+            background: #faf5ff;
+        }
+
+        .ai-title {
+            color: #6d28d9;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .career-name {
+            font-size: 30px;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .score {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            background: #7c3aed;
+            color: white;
+            font-weight: bold;
+        }
+
+        .reason {
+            margin-top: 18px;
+            line-height: 1.7;
+        }
+
+        .section-title {
+            font-size: 21px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .skill-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .skill {
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .missing-skill {
+            background: #fff7ed;
+            color: #c2410c;
+            padding: 8px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 5px;
+        }
+
+        .career-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 12px;
+        }
+
+        .career-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .career-title {
+            font-size: 19px;
+            font-weight: bold;
+        }
+
+        .career-score {
+            font-weight: bold;
+            color: #2563eb;
+        }
+
+        .matched {
+            color: #047857;
+            margin-top: 8px;
+        }
+
+        .missing {
+            color: #c2410c;
+            margin-top: 8px;
+        }
+
+        .path {
+            counter-reset: learning;
+            padding: 0;
+        }
+
+        .path li {
+            list-style: none;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 10px;
+            border-left: 4px solid #7c3aed;
+        }
+
+        ul {
+            line-height: 1.8;
+        }
+
+        ol {
+            line-height: 1.8;
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 10px;
+            text-decoration: none;
+            color: #2563eb;
+        }
+
+        .ai-status {
+            margin-top: 12px;
+            font-size: 14px;
+            color: #065f46;
+        }
+
+        .empty-message {
+            color: #6b7280;
+        }
+
+        @media (max-width: 700px) {
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .career-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .container {
+                width: 95%;
+            }
+
+            .career-name {
+                font-size: 25px;
+            }
+
+            .ai-title {
+                font-size: 21px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+
+    <!-- ================================================= -->
+    <!-- HEADER -->
+    <!-- ================================================= -->
+
+    <div class="header">
+
+        <h1>
+            CareerAI Resume Analyzer
+        </h1>
+
+        <p>
+            Analyze your resume, discover career opportunities,
+            and build your learning path with local AI.
+        </p>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- ERROR -->
+    <!-- ================================================= -->
+
+    {% if error %}
+
+        <div class="error">
+
+            {{ error }}
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- ================================================= -->
+    <!-- UPLOAD -->
+    <!-- ================================================= -->
+
+    <div class="card upload-box">
+
+        <h2>
+            Upload Your Resume
+        </h2>
+
+        <p>
+            Upload your PDF or DOCX resume.
+        </p>
+
+        <form
+            method="POST"
+            enctype="multipart/form-data"
+        >
+
+            {% csrf_token %}
+
+            <input
+                type="file"
+                name="resume"
+                accept=".pdf,.docx"
+                required
+            >
+
+            <br>
+
+            <button type="submit">
+                Analyze Resume
+            </button>
+
+        </form>
+
+    </div>
+
+
+    {% if analysis %}
+
+
+        <!-- ================================================= -->
+        <!-- SUCCESS -->
+        <!-- ================================================= -->
+
+        <div class="success">
+
+            <strong>
+                ✅ Resume Analyzed Successfully
+            </strong>
+
+            <br>
+
+            Your resume was successfully read
+            and analyzed locally.
+
+            {% if analysis.ai_available %}
+
+                <div class="ai-status">
+
+                    🤖 Career analysis powered by
+                    local Gemma AI.
+
+                </div>
+
+            {% else %}
+
+                <div class="ai-status">
+
+                    ℹ️ Local Gemma AI was unavailable.
+                    Rule-based analysis was used.
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- STATS -->
+        <!-- ================================================= -->
+
+        <div class="stats">
+
+
+            <!-- WORD COUNT -->
+
+            <div class="stat">
+
+                <div class="stat-number">
+
+                    {{ analysis.word_count }}
+
+                </div>
+
+                <div class="stat-label">
+
+                    Resume Words
+
+                </div>
+
+            </div>
+
+
+            <!-- SKILLS -->
+
+            <div class="stat">
+
+                <div class="stat-number">
+
+                    {{ analysis.skills|length }}
+
+                </div>
+
+                <div class="stat-label">
+
+                    Skills Detected
+
+                </div>
+
+            </div>
+
+
+            <!-- AI MATCH -->
+
+            <div class="stat">
+
+                <div class="stat-number">
+
+                    {{ analysis.ai_match }}%
+
+                </div>
+
+                <div class="stat-label">
+
+                    AI Career Match
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- AI CAREER RECOMMENDATION -->
+        <!-- ================================================= -->
+
+        <div class="card ai-card">
+
+
+            <div class="ai-title">
+
+                🤖 AI Career Recommendation
+
+            </div>
+
+
+            <!-- AI CAREER -->
+
+            <div class="career-name">
+
+                {{ analysis.ai_career }}
+
+            </div>
+
+
+            <!-- AI MATCH -->
+
+            <div class="score">
+
+                AI Match:
+                {{ analysis.ai_match }}%
+
+            </div>
+
+
+            <!-- WHY -->
+
+            {% if analysis.ai_why %}
+
+                <div class="reason">
+
+                    <strong>
+                        Why this career?
+                    </strong>
+
+                    <p>
+                        {{ analysis.ai_why }}
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+
+            <!-- GOOD FIT -->
+
+            {% if analysis.ai_good_fit %}
+
+                <div class="reason">
+
+                    <strong>
+                        Why you are a good fit
+                    </strong>
+
+                    <ul>
+
+                        {% for item in analysis.ai_good_fit %}
+
+                            <li>
+                                {{ item }}
+                            </li>
+
+                        {% endfor %}
+
+                    </ul>
+
+                </div>
+
+            {% endif %}
+
+
+            <!-- SKILLS TO IMPROVE -->
+
+            {% if analysis.ai_skills %}
+
+                <div class="reason">
+
+                    <strong>
+                        ⚠️ Skills to improve
+                    </strong>
+
+                    <div>
+
+                        {% for skill in analysis.ai_skills %}
+
+                            <span class="missing-skill">
+
+                                {{ skill }}
+
+                            </span>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- AI LEARNING PATH -->
+        <!-- ================================================= -->
+
+        {% if analysis.ai_learning_path %}
+
+            <div class="card">
+
+                <div class="section-title">
+
+                    📚 Recommended Learning Path
+
+                </div>
+
+                <ol class="path">
+
+                    {% for step in analysis.ai_learning_path %}
+
+                        <li>
+
+                            {{ step }}
+
+                        </li>
+
+                    {% endfor %}
+
+                </ol>
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- ================================================= -->
+        <!-- RESUME SUMMARY -->
+        <!-- ================================================= -->
+
+        <div class="card">
+
+            <div class="section-title">
+
+                📝 Resume Summary
+
+            </div>
+
+            <p>
+
+                {{ analysis.summary }}
+
+            </p>
+
+            {% if analysis.ai_resume_summary %}
+
+                <hr>
+
+                <strong>
+                    🤖 AI Professional Summary
+                </strong>
+
+                <p>
+
+                    {{ analysis.ai_resume_summary }}
+
+                </p>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- CAREER MATCHES -->
+        <!-- ================================================= -->
+
+        <div class="card">
+
+            <div class="section-title">
+
+                🎯 Career Matches
+
+            </div>
+
+
+            {% if analysis.career_matches %}
+
+
+                {% for career in analysis.career_matches %}
+
+                    <div class="career-item">
+
+
+                        <div class="career-header">
+
+
+                            <div class="career-title">
+
+                                {{ career.career }}
+
+                            </div>
+
+
+                            <div class="career-score">
+
+                                {{ career.score }}%
+
+                            </div>
+
+
+                        </div>
+
+
+                        {% if career.matched %}
+
+                            <div class="matched">
+
+                                <strong>
+                                    ✓ Matched:
+                                </strong>
+
+                                {% for skill in career.matched %}
+
+                                    {{ skill }}{% if not forloop.last %}, {% endif %}
+
+                                {% endfor %}
+
+                            </div>
+
+                        {% endif %}
+
+
+                        {% if career.missing %}
+
+                            <div class="missing">
+
+                                <strong>
+                                    ⚠ Missing:
+                                </strong>
+
+                                {% for skill in career.missing %}
+
+                                    {{ skill }}{% if not forloop.last %}, {% endif %}
+
+                                {% endfor %}
+
+                            </div>
+
+                        {% endif %}
+
+
+                    </div>
+
+                {% endfor %}
+
+
+            {% else %}
+
+                <p class="empty-message">
+
+                    No career matches available.
+
+                </p>
+
+            {% endif %}
+
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- DETECTED SKILLS -->
+        <!-- ================================================= -->
+
+        <div class="card">
+
+            <div class="section-title">
+
+                🛠️ Detected Skills
+
+            </div>
+
+
+            {% if analysis.skills %}
+
+                <div class="skill-list">
+
+                    {% for skill in analysis.skills %}
+
+                        <span class="skill">
+
+                            {{ skill }}
+
+                        </span>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <p class="empty-message">
+
+                    No recognized skills were detected.
+
+                </p>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- RESUME STRENGTHS -->
+        <!-- ================================================= -->
+
+        {% if analysis.strengths %}
+
+            <div class="card">
+
+                <div class="section-title">
+
+                    💪 Resume Strengths
+
+                </div>
+
+
+                <ul>
+
+                    {% for strength in analysis.strengths %}
+
+                        <li>
+
+                            ✓ {{ strength }}
+
+                        </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- ================================================= -->
+        <!-- IMPROVEMENT SUGGESTIONS -->
+        <!-- ================================================= -->
+
+        {% if analysis.suggestions %}
+
+            <div class="card">
+
+                <div class="section-title">
+
+                    💡 Improvement Suggestions
+
+                </div>
+
+
+                <ul>
+
+                    {% for suggestion in analysis.suggestions %}
+
+                        <li>
+
+                            ⚠ {{ suggestion }}
+
+                        </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            </div>
+
+        {% endif %}
+
+
+        <!-- ================================================= -->
+        <!-- INTERVIEW PREPARATION -->
+        <!-- ================================================= -->
+
+        {% if analysis.ai_interview_questions %}
+
+            <div class="card">
+
+                <div class="section-title">
+
+                    🎤 Interview Preparation
+
+                </div>
+
+                <p>
+
+                    Practice these questions before applying
+                    for your target career.
+
+                </p>
+
+
+                <ol>
+
+                    {% for question in analysis.ai_interview_questions %}
+
+                        <li>
+
+                            {{ question }}
+
+                        </li>
+
+                    {% endfor %}
+
+                </ol>
+
+            </div>
+
+        {% elif analysis.interview_questions %}
+
+            <div class="card">
+
+                <div class="section-title">
+
+                    🎤 Interview Preparation
+
+                </div>
+
+                <p>
+
+                    Practice these questions before applying
+                    for your target career.
+
+                </p>
+
+
+                <ol>
+
+                    {% for question in analysis.interview_questions %}
+
+                        <li>
+
+                            {{ question }}
+
+                        </li>
+
+                    {% endfor %}
+
+                </ol>
+
+            </div>
+
+        {% endif %}
+
+
+    {% endif %}
+
+
+    <!-- ================================================= -->
+    <!-- BACK -->
+    <!-- ================================================= -->
+
+    <a
+        class="back"
+        href="{% url 'home' %}"
+    >
+
+        ← Back to Career Assistant
+
+    </a>
+
+
+    <!-- ================================================= -->
+    <!-- FOOTER -->
+    <!-- ================================================= -->
+
+    <p
+        style="
+            text-align:center;
+            color:#6b7280;
+            margin-top:30px;
+        "
+    >
+
+        CareerAI • Find your path.
+        Build your future. 🚀
+
+    </p>
+
+
+</div>
+
+</body>
+
+</html>

@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>CareerAI - Career Guidance</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            background: #f8fafc;
+
+            color: #1f2937;
+
+            min-height: 100vh;
+        }
+
+
+        /* =========================
+           NAVBAR
+        ========================= */
+
+        .navbar {
+
+            background: rgba(255,255,255,0.96);
+
+            border-bottom: 1px solid #e5e7eb;
+
+            padding: 18px 6%;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            position: sticky;
+
+            top: 0;
+
+            z-index: 100;
+
+            backdrop-filter: blur(10px);
+        }
+
+
+        .logo {
+
+            font-size: 24px;
+
+            font-weight: 800;
+
+            color: #4f46e5;
+        }
+
+
+        .logo span {
+
+            color: #111827;
+        }
+
+
+        .nav-links {
+
+            display: flex;
+
+            gap: 10px;
+
+            align-items: center;
+
+            flex-wrap: wrap;
+        }
+
+
+        .nav-links a {
+
+            text-decoration: none;
+
+            color: #374151;
+
+            font-weight: 600;
+
+            padding: 9px 14px;
+
+            border-radius: 9px;
+
+            transition: 0.2s;
+        }
+
+
+        .nav-links a:hover {
+
+            background: #eef2ff;
+
+            color: #4f46e5;
+        }
+
+
+        .login-button {
+
+            background: #4f46e5;
+
+            color: white !important;
+        }
+
+
+        .logout-button {
+
+            color: #dc2626 !important;
+        }
+
+
+        /* =========================
+           MAIN CONTAINER
+        ========================= */
+
+        .container {
+
+            width: min(1050px, 92%);
+
+            margin: 45px auto;
+        }
+
+
+        /* =========================
+           HERO
+        ========================= */
+
+        .hero {
+
+            background:
+                radial-gradient(
+                    circle at top left,
+                    #818cf8,
+                    transparent 35%
+                ),
+
+                linear-gradient(
+                    135deg,
+                    #312e81,
+                    #4f46e5,
+                    #7c3aed
+                );
+
+            color: white;
+
+            padding: 60px 35px;
+
+            border-radius: 28px;
+
+            text-align: center;
+
+            box-shadow:
+                0 20px 50px
+                rgba(79,70,229,0.25);
+
+            margin-bottom: 30px;
+        }
+
+
+        .hero-badge {
+
+            display: inline-block;
+
+            background: rgba(255,255,255,0.15);
+
+            padding: 8px 15px;
+
+            border-radius: 30px;
+
+            font-size: 13px;
+
+            margin-bottom: 18px;
+        }
+
+
+        .hero h1 {
+
+            font-size: 44px;
+
+            margin-bottom: 15px;
+        }
+
+
+        .hero h1 span {
+
+            color: #c4b5fd;
+        }
+
+
+        .hero p {
+
+            max-width: 700px;
+
+            margin: auto;
+
+            line-height: 1.7;
+
+            color: #e0e7ff;
+
+            font-size: 17px;
+        }
+
+
+        /* =========================
+           FEATURES
+        ========================= */
+
+        .feature-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 15px;
+
+            margin-bottom: 30px;
+        }
+
+
+        .feature {
+
+            background: white;
+
+            border: 1px solid #e5e7eb;
+
+            border-radius: 16px;
+
+            padding: 20px;
+
+            text-align: center;
+
+            box-shadow:
+                0 8px 25px
+                rgba(15,23,42,0.05);
+        }
+
+
+        .feature-icon {
+
+            font-size: 28px;
+
+            margin-bottom: 8px;
+        }
+
+
+        .feature h3 {
+
+            color: #3730a3;
+
+            margin-bottom: 6px;
+
+            font-size: 16px;
+        }
+
+
+        .feature p {
+
+            color: #6b7280;
+
+            font-size: 13px;
+
+            line-height: 1.5;
+        }
+
+
+        /* =========================
+           FORM CARD
+        ========================= */
+
+        .form-card {
+
+            background: white;
+
+            padding: 30px;
+
+            border-radius: 20px;
+
+            border: 1px solid #e5e7eb;
+
+            box-shadow:
+                0 10px 30px
+                rgba(15,23,42,0.06);
+
+            margin-bottom: 30px;
+        }
+
+
+        .form-card label {
+
+            display: block;
+
+            font-weight: 700;
+
+            margin-bottom: 10px;
+
+            color: #1f2937;
+        }
+
+
+        .input-wrapper {
+
+            display: flex;
+
+            gap: 12px;
+        }
+
+
+        .input-wrapper input {
+
+            flex: 1;
+
+            padding: 15px 16px;
+
+            border: 1px solid #d1d5db;
+
+            border-radius: 10px;
+
+            font-size: 16px;
+
+            outline: none;
+
+            transition: 0.2s;
+        }
+
+
+        .input-wrapper input:focus {
+
+            border-color: #6366f1;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(99,102,241,0.12);
+        }
+
+
+        .input-wrapper button {
+
+            padding: 15px 22px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            background: #4f46e5;
+
+            color: white;
+
+            font-weight: 700;
+
+            font-size: 15px;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+
+            min-width: 170px;
+        }
+
+
+        .input-wrapper button:hover {
+
+            background: #4338ca;
+
+            transform: translateY(-1px);
+        }
+
+
+        .input-wrapper button:disabled {
+
+            background: #6366f1;
+
+            cursor: wait;
+
+            transform: none;
+
+            opacity: 0.9;
+        }
+
+
+        .example {
+
+            margin-top: 12px;
+
+            color: #9ca3af;
+
+            font-size: 13px;
+
+            line-height: 1.6;
+        }
+
+
+        /* =========================
+           LOADING MESSAGE
+        ========================= */
+
+        .loading-box {
+
+            display: none;
+
+            margin-top: 18px;
+
+            padding: 16px;
+
+            background: #eef2ff;
+
+            border: 1px solid #c7d2fe;
+
+            border-radius: 12px;
+
+            color: #3730a3;
+
+            text-align: center;
+
+            font-weight: 600;
+        }
+
+
+        .loading-box.active {
+
+            display: block;
+        }
+
+
+        .loading-spinner {
+
+            display: inline-block;
+
+            width: 18px;
+
+            height: 18px;
+
+            border: 3px solid #c7d2fe;
+
+            border-top-color: #4f46e5;
+
+            border-radius: 50%;
+
+            animation:
+                spin 0.8s linear infinite;
+
+            vertical-align: middle;
+
+            margin-right: 8px;
+        }
+
+
+        @keyframes spin {
+
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+
+        /* =========================
+           ERROR
+        ========================= */
+
+        .error {
+
+            background: #fef2f2;
+
+            color: #991b1b;
+
+            border: 1px solid #fecaca;
+
+            padding: 17px;
+
+            border-radius: 10px;
+
+            line-height: 1.5;
+
+            margin-bottom: 25px;
+        }
+
+
+        /* =========================
+           RESULT CARD
+        ========================= */
+
+        .result-card {
+
+            background: white;
+
+            padding: 30px;
+
+            border-radius: 20px;
+
+            border: 1px solid #e5e7eb;
+
+            box-shadow:
+                0 10px 30px
+                rgba(15,23,42,0.06);
+
+            margin-bottom: 30px;
+        }
+
+
+        .ai-badge {
+
+            display: inline-block;
+
+            background: #eef2ff;
+
+            color: #4338ca;
+
+            padding: 8px 13px;
+
+            border-radius: 20px;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            margin-bottom: 15px;
+        }
+
+
+        .result-title {
+
+            font-size: 32px;
+
+            margin-bottom: 12px;
+
+            color: #1e1b4b;
+        }
+
+
+        .result-subtitle {
+
+            color: #6b7280;
+
+            line-height: 1.7;
+
+            margin-bottom: 25px;
+        }
+
+
+        /* =========================
+           OVERVIEW
+        ========================= */
+
+        .overview {
+
+            background: #f8fafc;
+
+            padding: 22px;
+
+            border-radius: 14px;
+
+            border: 1px solid #e5e7eb;
+
+            margin-bottom: 22px;
+
+            line-height: 1.7;
+        }
+
+
+        .overview h3 {
+
+            color: #3730a3;
+
+            margin-bottom: 10px;
+        }
+
+
+        /* =========================
+           GUIDANCE CARDS
+        ========================= */
+
+        .cards {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 18px;
+
+            margin-bottom: 22px;
+        }
+
+
+        .card {
+
+            background: #fafbff;
+
+            padding: 23px;
+
+            border-radius: 15px;
+
+            border: 1px solid #e5e7eb;
+
+            transition: 0.2s;
+        }
+
+
+        .card:hover {
+
+            transform: translateY(-3px);
+
+            box-shadow:
+                0 10px 25px
+                rgba(15,23,42,0.07);
+        }
+
+
+        .card h3 {
+
+            color: #3730a3;
+
+            margin-bottom: 12px;
+
+            font-size: 18px;
+        }
+
+
+        .card p {
+
+            color: #4b5563;
+
+            line-height: 1.7;
+        }
+
+
+        /* =========================
+           LISTS
+        ========================= */
+
+        .guidance-list {
+
+            list-style: none;
+
+            padding: 0;
+        }
+
+
+        .guidance-list li {
+
+            padding: 10px 0;
+
+            border-bottom: 1px solid #e5e7eb;
+
+            color: #374151;
+
+            line-height: 1.6;
+        }
+
+
+        .guidance-list li:last-child {
+
+            border-bottom: none;
+        }
+
+
+        .step-number {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            width: 28px;
+
+            height: 28px;
+
+            background: #4f46e5;
+
+            color: white;
+
+            border-radius: 50%;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            margin-right: 9px;
+        }
+
+
+        /* =========================
+           PROJECTS
+        ========================= */
+
+        .project-item {
+
+            background: white;
+
+            border: 1px solid #e5e7eb;
+
+            padding: 15px;
+
+            border-radius: 10px;
+
+            margin-bottom: 10px;
+
+            color: #374151;
+        }
+
+
+        /* =========================
+           AI STATUS
+        ========================= */
+
+        .ai-status {
+
+            margin-top: 20px;
+
+            padding: 12px 15px;
+
+            border-radius: 10px;
+
+            font-size: 13px;
+
+            font-weight: 600;
+        }
+
+
+        .ai-success {
+
+            background: #ecfdf5;
+
+            border: 1px solid #a7f3d0;
+
+            color: #065f46;
+        }
+
+
+        .ai-fallback {
+
+            background: #fffbeb;
+
+            border: 1px solid #fde68a;
+
+            color: #92400e;
+        }
+
+
+        /* =========================
+           FOOTER
+        ========================= */
+
+        footer {
+
+            text-align: center;
+
+            padding: 35px 20px;
+
+            color: #9ca3af;
+
+            font-size: 14px;
+        }
+
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 700px) {
+
+            .navbar {
+
+                padding: 15px 4%;
+
+                flex-wrap: wrap;
+
+                gap: 10px;
+            }
+
+
+            .nav-links {
+
+                flex-wrap: wrap;
+            }
+
+
+            .nav-links a {
+
+                font-size: 13px;
+
+                padding: 7px;
+            }
+
+
+            .container {
+
+                margin-top: 25px;
+            }
+
+
+            .hero {
+
+                padding: 40px 22px;
+
+                border-radius: 20px;
+            }
+
+
+            .hero h1 {
+
+                font-size: 31px;
+            }
+
+
+            .hero p {
+
+                font-size: 15px;
+            }
+
+
+            .feature-grid {
+
+                grid-template-columns: 1fr;
+            }
+
+
+            .input-wrapper {
+
+                flex-direction: column;
+            }
+
+
+            .input-wrapper button {
+
+                width: 100%;
+            }
+
+
+            .cards {
+
+                grid-template-columns: 1fr;
+            }
+
+
+            .result-card {
+
+                padding: 22px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================
+     NAVBAR
+========================= -->
+
+<nav class="navbar">
+
+    <div class="logo">
+
+        Career<span>AI</span> 🚀
+
+    </div>
+
+
+    <div class="nav-links">
+
+        {% if user.is_authenticated %}
+
+            <a href="/">
+                Home
+            </a>
+
+            <a href="/resume/">
+                Resume Analyzer
+            </a>
+
+            <a href="/history/">
+                History
+            </a>
+
+            <a href="/logout/"
+               class="logout-button">
+
+                Logout
+
+            </a>
+
+        {% else %}
+
+            <a href="/login/">
+                Login
+            </a>
+
+            <a href="/register/"
+               class="login-button">
+
+                Register
+
+            </a>
+
+        {% endif %}
+
+    </div>
+
+</nav>
+
+
+<!-- =========================
+     MAIN
+========================= -->
+
+<div class="container">
+
+
+    <!-- =========================
+         HERO
+    ========================= -->
+
+    <section class="hero">
+
+        <div class="hero-badge">
+
+            🤖 AI-Powered Career Guidance
+
+        </div>
+
+
+        <h1>
+
+            Build Your
+            <span>Career Future</span>
+
+        </h1>
+
+
+        <p>
+
+            Discover the skills, technologies,
+            projects, roadmap, and interview topics
+            you need for your dream career.
+
+        </p>
+
+    </section>
+
+
+    <!-- =========================
+         FEATURES
+    ========================= -->
+
+    <div class="feature-grid">
+
+
+        <div class="feature">
+
+            <div class="feature-icon">
+                🎯
+            </div>
+
+            <h3>
+                Career Guidance
+            </h3>
+
+            <p>
+
+                Get AI-powered guidance,
+                skills, roadmap and projects
+                for your target career.
+
+            </p>
+
+        </div>
+
+
+        <div class="feature">
+
+            <div class="feature-icon">
+                📄
+            </div>
+
+            <h3>
+                Resume Analyzer
+            </h3>
+
+            <p>
+
+                Analyze your resume,
+                detect skills and discover
+                suitable career paths.
+
+            </p>
+
+        </div>
+
+
+        <div class="feature">
+
+            <div class="feature-icon">
+                🚀
+            </div>
+
+            <h3>
+                Career Roadmap
+            </h3>
+
+            <p>
+
+                Turn your career goal
+                into practical learning
+                steps and projects.
+
+            </p>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- =========================
+         SEARCH FORM
+    ========================= -->
+
+    <div class="form-card">
+
+
+        <form method="POST"
+              onsubmit="showLoading()">
+
+
+            {% csrf_token %}
+
+
+            <label for="career">
+
+                🎯 What career are you interested in?
+
+            </label>
+
+
+            <div class="input-wrapper">
+
+
+                <input
+                    type="text"
+                    id="career"
+                    name="career"
+                    placeholder="Example: Python Developer"
+                    value="{{ career|default:'' }}"
+                    required
+                    autocomplete="off"
+                >
+
+
+                <button type="submit"
+                        id="guidanceButton">
+
+                    Get Guidance 🚀
+
+                </button>
+
+
+            </div>
+
+
+            <div class="example">
+
+                Try:
+
+                Python Developer,
+                Cloud Engineer,
+                Data Analyst,
+                DevOps Engineer,
+                Cybersecurity,
+                Full Stack Developer
+
+            </div>
+
+
+            <!-- LOADING -->
+
+            <div id="loadingBox"
+                 class="loading-box">
+
+                <span class="loading-spinner"></span>
+
+                Gemma AI is analyzing your career request...
+
+            </div>
+
+
+        </form>
+
+
+    </div>
+
+
+    <!-- =========================
+         ERROR
+    ========================= -->
+
+    {% if error %}
+
+        <div class="error">
+
+            ⚠️ {{ error }}
+
+        </div>
+
+    {% endif %}
+
+
+    <!-- =========================
+         CAREER RESULTS
+    ========================= -->
+
+    {% if career_info or ai_analysis %}
+
+
+        <div class="result-card">
+
+
+            <div class="ai-badge">
+
+                🤖 GEMMA AI CAREER GUIDANCE
+
+            </div>
+
+
+            <h2 class="result-title">
+
+                🎯
+
+                {% if ai_analysis.career %}
+
+                    {{ ai_analysis.career }}
+
+                {% else %}
+
+                    {{ career }}
+
+                {% endif %}
+
+            </h2>
+
+
+            <p class="result-subtitle">
+
+                AI-powered career guidance generated
+                locally using Gemma.
+
+            </p>
+
+
+            <!-- =====================
+                 OVERVIEW
+            ====================== -->
+
+            {% if ai_analysis.overview %}
+
+                <div class="overview">
+
+                    <h3>
+
+                        📖 Career Overview
+
+                    </h3>
+
+                    <p>
+
+                        {{ ai_analysis.overview }}
+
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+
+            <!-- =====================
+                 WHY CHOOSE
+            ====================== -->
+
+            {% if ai_analysis.why_choose %}
+
+                <div class="overview">
+
+                    <h3>
+
+                        💡 Why Choose This Career?
+
+                    </h3>
+
+                    <p>
+
+                        {{ ai_analysis.why_choose }}
+
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+
+            <!-- =====================
+                 CARDS
+            ====================== -->
+
+            <div class="cards">
+
+
+                <!-- SKILLS -->
+
+                <div class="card">
+
+                    <h3>
+
+                        🛠️ Skills You Need
+
+                    </h3>
+
+
+                    {% if ai_analysis.skills %}
+
+                        <ul class="guidance-list">
+
+                            {% for skill in ai_analysis.skills %}
+
+                                <li>
+
+                                    💻 {{ skill }}
+
+                                </li>
+
+                            {% endfor %}
+
+                        </ul>
+
+                    {% elif career_info.skills %}
+
+                        <ul class="guidance-list">
+
+                            {% for skill in career_info.skills %}
+
+                                <li>
+
+                                    💻 {{ skill }}
+
+                                </li>
+
+                            {% endfor %}
+
+                        </ul>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- ROADMAP -->
+
+                <div class="card">
+
+                    <h3>
+
+                        🗺️ Career Roadmap
+
+                    </h3>
+
+
+                    {% if ai_analysis.roadmap %}
+
+                        <ul class="guidance-list">
+
+                            {% for step in ai_analysis.roadmap %}
+
+                                <li>
+
+                                    <span class="step-number">
+
+                                        {{ forloop.counter }}
+
+                                    </span>
+
+                                    {{ step }}
+
+                                </li>
+
+                            {% endfor %}
+
+                        </ul>
+
+                    {% elif career_info.roadmap %}
+
+                        <ul class="guidance-list">
+
+                            {% for step in career_info.roadmap %}
+
+                                <li>
+
+                                    <span class="step-number">
+
+                                        {{ forloop.counter }}
+
+                                    </span>
+
+                                    {{ step }}
+
+                                </li>
+
+                            {% endfor %}
+
+                        </ul>
+
+                    {% endif %}
+
+                </div>
+
+
+            </div>
+
+
+            <!-- =====================
+                 PROJECTS
+            ====================== -->
+
+            {% if ai_analysis.projects or career_info.projects %}
+
+                <div class="card"
+                     style="margin-bottom:22px;">
+
+                    <h3>
+
+                        🚀 Recommended Projects
+
+                    </h3>
+
+
+                    {% if ai_analysis.projects %}
+
+                        {% for project in ai_analysis.projects %}
+
+                            <div class="project-item">
+
+                                🚀 {{ project }}
+
+                            </div>
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        {% for project in career_info.projects %}
+
+                            <div class="project-item">
+
+                                🚀 {{ project }}
+
+                            </div>
+
+                        {% endfor %}
+
+                    {% endif %}
+
+                </div>
+
+            {% endif %}
+
+
+            <!-- =====================
+                 INTERVIEW
+            ====================== -->
+
+            {% if ai_analysis.interview_topics or career_info.interview %}
+
+                <div class="card">
+
+                    <h3>
+
+                        🎤 Interview Preparation
+
+                    </h3>
+
+
+                    {% if ai_analysis.interview_topics %}
+
+                        <ul class="guidance-list">
+
+                            {% for topic in ai_analysis.interview_topics %}
+
+                                <li>
+
+                                    🎤 {{ topic }}
+
+                                </li>
+
+                            {% endfor %}
+
+                        </ul>
+
+                    {% else %}
+
+                        <ul class="guidance-list">
+
+                            {% for topic in career_info.interview %}
+
+                                <li>
+
+                                    🎤 {{ topic }}
+
+                                </li>
+
+                            {% endfor %}
+
+                        </ul>
+
+                    {% endif %}
+
+                </div>
+
+            {% endif %}
+
+
+            <!-- =====================
+                 AI STATUS
+            ====================== -->
+
+            {% if ai_analysis.ai_available %}
+
+                <div class="ai-status ai-success">
+
+                    ✅ Career guidance powered by
+                    local Gemma AI.
+
+                </div>
+
+            {% else %}
+
+                <div class="ai-status ai-fallback">
+
+                    ℹ️ Gemma AI was unavailable.
+                    Career guidance was generated
+                    using the local career database.
+
+                </div>
+
+            {% endif %}
+
+
+        </div>
+
+
+    {% endif %}
+
+
+</div>
+
+
+<!-- =========================
+     FOOTER
+========================= -->
+
+<footer>
+
+    CareerAI • Find your path. Build your future. 🚀
+
+</footer>
+
+
+<!-- =========================
+     JAVASCRIPT
+========================= -->
+
+<script>
+
+function showLoading() {
+
+    const button =
+        document.getElementById(
+            "guidanceButton"
+        );
+
+    const loadingBox =
+        document.getElementById(
+            "loadingBox"
+        );
+
+
+    if (button) {
+
+        button.disabled = true;
+
+        button.innerHTML =
+            "🤖 Thinking...";
+
+    }
+
+
+    if (loadingBox) {
+
+        loadingBox.classList.add(
+            "active"
+        );
+
+    }
+
+}
+
+
+</script>
+
+
+</body>
+
+</html>

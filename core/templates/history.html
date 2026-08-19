@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>History | CareerAI</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 1100px;
+            margin: 40px auto;
+        }
+
+        .header {
+            background: #111827;
+            color: white;
+            padding: 30px;
+            border-radius: 18px;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            margin: 0 0 8px;
+            font-size: 30px;
+        }
+
+        .header p {
+            margin: 0;
+            color: #d1d5db;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+        }
+
+        .section-title {
+            font-size: 23px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .history-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 12px;
+            background: #fafafa;
+        }
+
+        .history-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .career-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .resume-name {
+            font-size: 17px;
+            font-weight: bold;
+            color: #111827;
+            word-break: break-word;
+        }
+
+        .date {
+            margin-top: 7px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .source {
+            margin-top: 8px;
+            color: #2563eb;
+            font-size: 14px;
+        }
+
+        .status {
+            margin-top: 10px;
+            color: #047857;
+            font-size: 14px;
+        }
+
+        .empty {
+            padding: 20px;
+            text-align: center;
+            color: #6b7280;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 5px;
+            text-decoration: none;
+            color: #2563eb;
+            font-weight: bold;
+        }
+
+        .back:hover {
+            text-decoration: underline;
+        }
+
+        .footer {
+            text-align: center;
+            color: #6b7280;
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 700px) {
+
+            .container {
+                width: 95%;
+                margin: 20px auto;
+            }
+
+            .header {
+                padding: 22px;
+            }
+
+            .header h1 {
+                font-size: 25px;
+            }
+
+            .card {
+                padding: 18px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+
+    <!-- ================================================= -->
+    <!-- HEADER -->
+    <!-- ================================================= -->
+
+    <div class="header">
+
+        <h1>
+            🔎 CareerAI History
+        </h1>
+
+        <p>
+            View your previous career searches and resume analyses.
+        </p>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- CAREER SEARCH HISTORY -->
+    <!-- ================================================= -->
+
+    <div class="card">
+
+        <div class="section-title">
+
+            🔎 Career Search History
+
+        </div>
+
+
+        {% if searches %}
+
+            {% for search in searches %}
+
+                <div class="history-item">
+
+                    <div class="career-name">
+
+                        {{ search.career }}
+
+                    </div>
+
+                    <div class="date">
+
+                        🕒 {{ search.searched_at|date:"d M Y, h:i A" }}
+
+                    </div>
+
+
+                    {% if search.source %}
+
+                        <div class="source">
+
+                            Source: {{ search.source }}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty">
+
+                No career searches yet.
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- RESUME HISTORY -->
+    <!-- ================================================= -->
+
+    <div class="card">
+
+        <div class="section-title">
+
+            📄 Resume Analysis History
+
+        </div>
+
+
+        {% if resumes %}
+
+            {% for resume in resumes %}
+
+                <div class="history-item">
+
+                    <div class="resume-name">
+
+                        📄 {{ resume.resume.name }}
+
+                    </div>
+
+
+                    <div class="date">
+
+                        🕒 {{ resume.analyzed_at|date:"d M Y, h:i A" }}
+
+                    </div>
+
+
+                    {% if resume.extracted_text %}
+
+                        <div class="status">
+
+                            ✅ Resume text extracted successfully.
+
+                        </div>
+
+                    {% else %}
+
+                        <div style="color:#c2410c; margin-top:10px;">
+
+                            ⚠ Resume text was not extracted.
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty">
+
+                No resume analyses yet.
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- BACK -->
+    <!-- ================================================= -->
+
+    <a
+        class="back"
+        href="{% url 'home' %}"
+    >
+
+        ← Back to Career Assistant
+
+    </a>
+
+
+    <div class="footer">
+
+        CareerAI • Find your path. Build your future. 🚀
+
+    </div>
+
+
+</div>
+
+</body>
+
+</html>
