@@ -1,8 +1,16 @@
 # CareerAI 🚀
 
-CareerAI is an AI-powered career assistance web application built with **Python, Django, and Google Gemini**.
+An AI-powered career assistance web application built with Django and Google Gemini.
 
-The project helps users explore career options, receive AI-powered career guidance, analyze resumes, and maintain a history of their career searches and resume analyses.
+CareerAI helps users explore career options, analyze resumes, and keep track of their previous career searches and resume analyses in one place.
+
+## 🌐 Live Demo
+
+http://127.0.0.1:8000/
+
+## 📌 GitHub Repository
+
+https://github.com/sachinms-tech/CareerAI
 
 ---
 
@@ -10,7 +18,7 @@ The project helps users explore career options, receive AI-powered career guidan
 
 ### 🔎 AI Career Search
 
-Search for careers such as:
+Users can search for careers such as:
 
 - Python Developer
 - Data Analyst
@@ -18,28 +26,22 @@ Search for careers such as:
 - Software Engineer
 - Machine Learning Engineer
 
-CareerAI uses **Google Gemini** to generate career-related guidance and information.
-
----
+CareerAI uses Google Gemini to generate career-related information and guidance.
 
 ### 📄 Resume Analyzer
 
 Users can upload a resume and analyze it through the application.
 
-The application extracts text from the uploaded resume and records the analysis in the user's history.
-
----
+The application extracts resume text and stores the analysis history.
 
 ### 📚 History
 
-CareerAI provides a history page containing:
+CareerAI keeps track of:
 
 - Previous career searches
-- Career search timestamps
 - Resume analysis history
+- Search timestamps
 - Resume extraction status
-
----
 
 ### 🔐 User Authentication
 
@@ -50,17 +52,15 @@ The application includes:
 - User logout
 - User-specific history
 
----
-
 ### 🤖 Google Gemini Integration
 
-CareerAI integrates the **Google Gemini API** to provide AI-powered career responses.
+CareerAI integrates Google's Gemini API to provide AI-powered career responses.
 
-API credentials are stored through environment variables rather than being directly exposed in the source code.
+The application is designed so that the API key is stored through environment variables rather than being hard-coded into the source code.
 
 ---
 
-## 🛠️ Technology Stack
+## 🛠️ Tech Stack
 
 ### Backend
 
@@ -78,14 +78,14 @@ API credentials are stored through environment variables rather than being direc
 
 - SQLite
 
+### Deployment
+
+- Render
+
 ### Version Control
 
 - Git
 - GitHub
-
-### Deployment
-
-- Render
 
 ---
 
