@@ -1,16 +1,18 @@
 # CareerAI 🚀
 
-An AI-powered career assistance web application built with Django and Google Gemini.
+An AI-powered career assistance web application built with **Python, Django, and Google Gemini AI**.
 
 CareerAI helps users explore career options, analyze resumes, and keep track of their previous career searches and resume analyses in one place.
 
 ## 🌐 Live Demo
 
-https://careerai-1xqm.onrender.com/
+🔗 https://careerai-1xqm.onrender.com/
+
+> Note: The application may take a few moments to start if the Render service is sleeping.
 
 ## 📌 GitHub Repository
 
-https://github.com/sachinms-tech/CareerAI
+🔗 https://github.com/sachinms-tech/CareerAI
 
 ---
 
@@ -26,7 +28,7 @@ Users can search for careers such as:
 - Software Engineer
 - Machine Learning Engineer
 
-CareerAI uses Google Gemini to generate career-related information and guidance.
+CareerAI uses **Google Gemini AI** to generate career-related information and guidance.
 
 ### 📄 Resume Analyzer
 
@@ -34,7 +36,7 @@ Users can upload a resume and analyze it through the application.
 
 The application extracts resume text and stores the analysis history.
 
-### 📚 History
+### 📚 Search & Resume History
 
 CareerAI keeps track of:
 
@@ -52,11 +54,11 @@ The application includes:
 - User logout
 - User-specific history
 
-### 🤖 Google Gemini Integration
+### 🤖 Google Gemini AI Integration
 
-CareerAI integrates Google's Gemini API to provide AI-powered career responses.
+CareerAI integrates Google's **Gemini API** to provide AI-powered career responses.
 
-The application is designed so that the API key is stored through environment variables rather than being hard-coded into the source code.
+The API key is configured through environment variables rather than being hard-coded into the source code.
 
 ---
 
