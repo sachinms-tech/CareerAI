@@ -6,7 +6,7 @@ CareerAI helps users explore career options, analyze resumes, and keep track of 
 
 ## 🌐 Live Demo
 
-http://127.0.0.1:8000/
+https://careerai-1xqm.onrender.com/
 
 ## 📌 GitHub Repository
 
