@@ -8,7 +8,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>History | CareerAI</title>
+    <title>CareerAI | History</title>
 
     <style>
 
@@ -29,6 +29,10 @@
             margin: 40px auto;
         }
 
+        /* ================================
+           HEADER
+        ================================= */
+
         .header {
             background: #111827;
             color: white;
@@ -47,6 +51,10 @@
             color: #d1d5db;
         }
 
+        /* ================================
+           CARD
+        ================================= */
+
         .card {
             background: white;
             border-radius: 16px;
@@ -56,27 +64,83 @@
         }
 
         .section-title {
-            font-size: 23px;
+            font-size: 22px;
             font-weight: bold;
             margin-bottom: 20px;
+            color: #111827;
         }
+
+        /* ================================
+           EMPTY STATE
+        ================================= */
+
+        .empty {
+            text-align: center;
+            padding: 35px 20px;
+            color: #6b7280;
+        }
+
+        .empty-icon {
+            font-size: 45px;
+            margin-bottom: 10px;
+        }
+
+        /* ================================
+           CAREER HISTORY
+        ================================= */
 
         .history-item {
             border: 1px solid #e5e7eb;
             border-radius: 12px;
             padding: 18px;
             margin-bottom: 12px;
-            background: #fafafa;
+            background: #ffffff;
+            transition: 0.2s ease;
         }
 
-        .history-item:last-child {
-            margin-bottom: 0;
+        .history-item:hover {
+            border-color: #2563eb;
+            transform: translateY(-1px);
         }
 
         .career-name {
             font-size: 18px;
             font-weight: bold;
             color: #111827;
+            text-transform: capitalize;
+        }
+
+        .history-time {
+            margin-top: 7px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .source {
+            margin-top: 8px;
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-size: 12px;
+        }
+
+        /* ================================
+           RESUME HISTORY
+        ================================= */
+
+        .resume-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 12px;
+            background: #ffffff;
+            transition: 0.2s ease;
+        }
+
+        .resume-item:hover {
+            border-color: #2563eb;
         }
 
         .resume-name {
@@ -86,50 +150,111 @@
             word-break: break-word;
         }
 
-        .date {
+        .resume-time {
             margin-top: 7px;
             color: #6b7280;
             font-size: 14px;
         }
 
-        .source {
-            margin-top: 8px;
-            color: #2563eb;
-            font-size: 14px;
-        }
-
-        .status {
+        .resume-status {
             margin-top: 10px;
-            color: #047857;
-            font-size: 14px;
-        }
-
-        .empty {
-            padding: 20px;
-            text-align: center;
-            color: #6b7280;
-            background: #f8fafc;
-            border-radius: 10px;
-        }
-
-        .back {
+            padding: 8px 12px;
+            border-radius: 8px;
             display: inline-block;
-            margin-top: 5px;
-            text-decoration: none;
-            color: #2563eb;
+            font-size: 13px;
             font-weight: bold;
         }
 
-        .back:hover {
-            text-decoration: underline;
+        .success-status {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
         }
+
+        .warning-status {
+            background: #fff7ed;
+            color: #c2410c;
+            border: 1px solid #fed7aa;
+        }
+
+        /* ================================
+           OPEN RESUME BUTTON
+        ================================= */
+
+        .resume-actions {
+            margin-top: 15px;
+        }
+
+        .open-resume {
+            display: inline-block;
+            padding: 9px 15px;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            transition: 0.2s ease;
+        }
+
+        .open-resume:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        /* ================================
+           NAVIGATION
+        ================================= */
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 25px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 20px;
+            border-radius: 9px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.2s ease;
+        }
+
+        .primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .primary:hover {
+            background: #1d4ed8;
+        }
+
+        .secondary {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .secondary:hover {
+            background: #d1d5db;
+        }
+
+        /* ================================
+           FOOTER
+        ================================= */
 
         .footer {
             text-align: center;
             color: #6b7280;
             margin-top: 30px;
-            margin-bottom: 30px;
+            padding-bottom: 20px;
         }
+
+        /* ================================
+           MOBILE
+        ================================= */
 
         @media (max-width: 700px) {
 
@@ -150,6 +275,11 @@
                 padding: 18px;
             }
 
+            .open-resume {
+                width: 100%;
+                text-align: center;
+            }
+
         }
 
     </style>
@@ -159,12 +289,13 @@
 
 <body>
 
+
 <div class="container">
 
 
-    <!-- ================================================= -->
-    <!-- HEADER -->
-    <!-- ================================================= -->
+    <!-- =========================================
+         HEADER
+    ========================================== -->
 
     <div class="header">
 
@@ -179,34 +310,33 @@
     </div>
 
 
-    <!-- ================================================= -->
-    <!-- CAREER SEARCH HISTORY -->
-    <!-- ================================================= -->
+
+    <!-- =========================================
+         CAREER SEARCH HISTORY
+    ========================================== -->
 
     <div class="card">
 
         <div class="section-title">
-
             🔎 Career Search History
-
         </div>
 
 
         {% if searches %}
+
 
             {% for search in searches %}
 
                 <div class="history-item">
 
                     <div class="career-name">
-
                         {{ search.career }}
-
                     </div>
 
-                    <div class="date">
+                    <div class="history-time">
 
-                        🕒 {{ search.searched_at|date:"d M Y, h:i A" }}
+                        🕒
+                        {{ search.searched_at|date:"d M Y, h:i A" }}
 
                     </div>
 
@@ -215,7 +345,8 @@
 
                         <div class="source">
 
-                            Source: {{ search.source }}
+                            Source:
+                            {{ search.source }}
 
                         </div>
 
@@ -225,55 +356,71 @@
 
             {% endfor %}
 
+
         {% else %}
+
 
             <div class="empty">
 
-                No career searches yet.
+                <div class="empty-icon">
+                    🔎
+                </div>
+
+                <strong>
+                    No career searches yet.
+                </strong>
+
+                <p>
+                    Search for a career to see it here.
+                </p>
 
             </div>
+
 
         {% endif %}
 
     </div>
 
 
-    <!-- ================================================= -->
-    <!-- RESUME HISTORY -->
-    <!-- ================================================= -->
+
+    <!-- =========================================
+         RESUME ANALYSIS HISTORY
+    ========================================== -->
 
     <div class="card">
 
         <div class="section-title">
-
             📄 Resume Analysis History
-
         </div>
 
 
         {% if resumes %}
 
+
             {% for resume in resumes %}
 
-                <div class="history-item">
+                <div class="resume-item">
+
 
                     <div class="resume-name">
 
-                        📄 {{ resume.resume.name }}
+                        📄
+                        {{ resume.resume.name }}
 
                     </div>
 
 
-                    <div class="date">
+                    <div class="resume-time">
 
-                        🕒 {{ resume.analyzed_at|date:"d M Y, h:i A" }}
+                        🕒
+                        {{ resume.analyzed_at|date:"d M Y, h:i A" }}
 
                     </div>
 
 
                     {% if resume.extracted_text %}
 
-                        <div class="status">
+                        <div class="resume-status success-status">
 
                             ✅ Resume text extracted successfully.
 
@@ -281,7 +428,7 @@
 
                     {% else %}
 
-                        <div style="color:#c2410c; margin-top:10px;">
+                        <div class="resume-status warning-status">
 
                             ⚠ Resume text was not extracted.
 
@@ -289,36 +436,85 @@
 
                     {% endif %}
 
+
+                    <!-- OPEN RESUME -->
+
+                    {% if resume.resume %}
+
+                        <div class="resume-actions">
+
+                            <a
+                                class="open-resume"
+                                href="{% url 'view_resume' resume.id %}"
+                                target="_blank"
+                            >
+                                📄 Open Resume
+                            </a>
+
+                        </div>
+
+                    {% endif %}
+
+
                 </div>
 
             {% endfor %}
 
+
         {% else %}
+
 
             <div class="empty">
 
-                No resume analyses yet.
+                <div class="empty-icon">
+                    📄
+                </div>
+
+                <strong>
+                    No resume analyses yet.
+                </strong>
+
+                <p>
+                    Upload a resume to see your analysis history here.
+                </p>
 
             </div>
+
 
         {% endif %}
 
     </div>
 
 
-    <!-- ================================================= -->
-    <!-- BACK -->
-    <!-- ================================================= -->
 
-    <a
-        class="back"
-        href="{% url 'home' %}"
-    >
+    <!-- =========================================
+         ACTION BUTTONS
+    ========================================== -->
 
-        ← Back to Career Assistant
+    <div class="actions">
 
-    </a>
+        <a
+            class="button primary"
+            href="{% url 'resume_analyzer' %}"
+        >
+            📄 Analyze Resume
+        </a>
 
+
+        <a
+            class="button secondary"
+            href="{% url 'home' %}"
+        >
+            ← Back to Career Assistant
+        </a>
+
+    </div>
+
+
+
+    <!-- =========================================
+         FOOTER
+    ========================================== -->
 
     <div class="footer">
 
@@ -328,6 +524,7 @@
 
 
 </div>
+
 
 </body>
 

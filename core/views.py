@@ -1,12 +1,16 @@
 from pathlib import Path
 import json
 import re
+import os
+import time
 
-import requests
+from dotenv import load_dotenv
+from google import genai
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.http import FileResponse, Http404
 from django.shortcuts import redirect, render
 
 from pypdf import PdfReader
@@ -16,51 +20,272 @@ from .models import CareerSearch, ResumeAnalysis
 
 
 # ============================================================
-# OLLAMA / LOCAL GEMMA AI
+# ENVIRONMENT / GEMINI AI
 # ============================================================
 
-OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
-OLLAMA_MODEL = "gemma3:4b"
+# Find project root.
+# views.py is normally inside:
+# project/app/views.py
+#
+# parents[1] points to the project folder containing manage.py.
+BASE_DIR = Path(__file__).resolve().parents[1]
+
+ENV_FILE = BASE_DIR / ".env"
+
+print("\n====================================")
+print("GEMINI ENVIRONMENT CHECK")
+print("====================================")
+print("BASE_DIR:", BASE_DIR)
+print(".env path:", ENV_FILE)
+print(".env exists:", ENV_FILE.exists())
+
+# Load .env explicitly
+load_dotenv(
+    dotenv_path=ENV_FILE,
+    override=True
+)
+
+GEMINI_API_KEY = os.getenv(
+    "GEMINI_API_KEY"
+)
+
+print(
+    "GEMINI KEY EXISTS:",
+    bool(GEMINI_API_KEY)
+)
+
+if GEMINI_API_KEY:
+    print(
+        "GEMINI KEY LENGTH:",
+        len(GEMINI_API_KEY)
+    )
+else:
+    print(
+        "WARNING: GEMINI_API_KEY was not loaded."
+    )
+
+print("====================================\n")
 
 
-def ask_gemma(prompt):
+# Gemini model confirmed from your available model list.
+GEMINI_MODEL = "gemini-3.6-flash"
+
+
+# ============================================================
+# GEMINI REQUEST
+# ============================================================
+
+def ask_gemini(prompt):
+    """
+    Send a prompt to Google Gemini.
+
+    Returns:
+        str: Gemini response
+        "": if Gemini is unavailable
+    """
+
     print("\n====================================")
-    print("GEMMA REQUEST STARTED")
+    print("GEMINI REQUEST STARTED")
     print("====================================")
 
-    try:
-        response = requests.post(
-            OLLAMA_URL,
-            json={
-                "model": OLLAMA_MODEL,
-                "prompt": prompt,
-                "stream": False,
-            },
-            timeout=180,
+    # Re-read the environment in case the server environment
+    # changed while Django was running.
+    load_dotenv(
+        dotenv_path=ENV_FILE,
+        override=True
+    )
+
+    api_key = os.getenv(
+        "GEMINI_API_KEY"
+    )
+
+    if not api_key:
+
+        print(
+            "GEMINI ERROR: GEMINI_API_KEY not found."
         )
 
-        response.raise_for_status()
+        print(
+            "Expected .env location:"
+        )
 
-        data = response.json()
-        result = data.get("response", "").strip()
+        print(
+            ENV_FILE
+        )
 
-        print("GEMMA RESPONSE RECEIVED")
-        print("Response length:", len(result))
-        print("====================================\n")
+        print(
+            "Check your .env file."
+        )
 
-        return result
+        print(
+            "====================================\n"
+        )
 
-    except requests.exceptions.ConnectionError:
-        print("OLLAMA ERROR: Ollama is not running.")
         return ""
 
-    except requests.exceptions.Timeout:
-        print("OLLAMA ERROR: Request timed out.")
+    try:
+
+        print(
+            "API KEY EXISTS:",
+            True
+        )
+
+        print(
+            "API KEY LENGTH:",
+            len(api_key)
+        )
+
+        print(
+            "MODEL:",
+            GEMINI_MODEL
+        )
+
+        client = genai.Client(
+            api_key=api_key
+        )
+
+        # Retry temporary errors
+        for attempt in range(3):
+
+            try:
+
+                print(
+                    f"GEMINI ATTEMPT {attempt + 1}/3"
+                )
+
+                response = client.models.generate_content(
+                    model=GEMINI_MODEL,
+                    contents=prompt
+                )
+
+                result = ""
+
+                if response:
+
+                    try:
+
+                        if response.text:
+
+                            result = response.text.strip()
+
+                    except Exception as text_error:
+
+                        print(
+                            "Could not read response.text:"
+                        )
+
+                        print(
+                            text_error
+                        )
+
+                if result:
+
+                    print(
+                        "GEMINI RESPONSE RECEIVED"
+                    )
+
+                    print(
+                        "Response length:",
+                        len(result)
+                    )
+
+                    print(
+                        "====================================\n"
+                    )
+
+                    return result
+
+                print(
+                    "GEMINI returned an empty response."
+                )
+
+            except Exception as e:
+
+                error_text = str(e)
+
+                print(
+                    f"GEMINI ATTEMPT {attempt + 1} ERROR:"
+                )
+
+                print(
+                    error_text
+                )
+
+                temporary_error = (
+                    "503" in error_text
+                    or "UNAVAILABLE" in error_text
+                    or "429" in error_text
+                    or "RESOURCE_EXHAUSTED" in error_text
+                    or "500" in error_text
+                    or "INTERNAL" in error_text
+                )
+
+                if (
+                    temporary_error
+                    and attempt < 2
+                ):
+
+                    wait_time = 2 * (
+                        attempt + 1
+                    )
+
+                    print(
+                        f"Temporary Gemini error. "
+                        f"Retrying in {wait_time} seconds..."
+                    )
+
+                    time.sleep(
+                        wait_time
+                    )
+
+                    continue
+
+                print(
+                    "Gemini request failed."
+                )
+
+                break
+
+        print(
+            "GEMINI ERROR: All attempts failed."
+        )
+
+        print(
+            "The application will use the local career database."
+        )
+
+        print(
+            "====================================\n"
+        )
+
         return ""
 
     except Exception as e:
-        print("OLLAMA ERROR:", e)
+
+        print(
+            "GEMINI CLIENT ERROR:"
+        )
+
+        print(
+            e
+        )
+
+        print(
+            "====================================\n"
+        )
+
         return ""
+
+
+# ============================================================
+# BACKWARD COMPATIBILITY
+# ============================================================
+
+def ask_gemma(prompt):
+
+    return ask_gemini(
+        prompt
+    )
 
 
 # ============================================================
@@ -71,43 +296,52 @@ def home(request):
 
     if request.method == "POST":
 
-        career = request.POST.get("career", "").strip()
+        career = request.POST.get(
+            "career",
+            ""
+        ).strip()
 
         if not career:
+
             return render(
                 request,
                 "home.html",
-                {"error": "Please enter a career."}
+                {
+                    "error": "Please enter a career."
+                }
             )
 
         print("\n====================================")
-        print("CAREER SEARCH:", career)
+        print(
+            "CAREER SEARCH:",
+            career
+        )
         print("====================================")
-        print("Sending career guidance request to Gemma...")
 
-        career_info = get_career_information(career)
-
-        # ----------------------------------------------------
-        # SAVE SEARCH
-        # ----------------------------------------------------
+        career_info = get_career_information(
+            career
+        )
 
         if request.user.is_authenticated:
 
             try:
+
                 CareerSearch.objects.create(
                     user=request.user,
                     career=career,
-                    source="Career Assistant"
+                    source="CareerAI"
                 )
 
             except Exception as e:
-                print("CAREER SEARCH SAVE ERROR:", e)
 
-        # ----------------------------------------------------
-        # GEMMA CAREER ANALYSIS
-        # ----------------------------------------------------
+                print(
+                    "CAREER SEARCH SAVE ERROR:",
+                    e
+                )
 
-        ai_analysis = generate_career_ai_analysis(career)
+        ai_analysis = generate_career_ai_analysis(
+            career
+        )
 
         return render(
             request,
@@ -120,7 +354,10 @@ def home(request):
             }
         )
 
-    return render(request, "home.html")
+    return render(
+        request,
+        "home.html"
+    )
 
 
 # ============================================================
@@ -130,6 +367,7 @@ def home(request):
 CAREER_DATABASE = {
 
     "python developer": {
+
         "skills": [
             "Python",
             "Django",
@@ -137,11 +375,13 @@ CAREER_DATABASE = {
             "Git",
             "REST API"
         ],
+
         "projects": [
             "Django Job Portal",
             "REST API Project",
             "Task Management System"
         ],
+
         "roadmap": [
             "Master Python",
             "Learn Django",
@@ -150,6 +390,7 @@ CAREER_DATABASE = {
             "Build REST APIs",
             "Build full-stack projects"
         ],
+
         "interview": [
             "Python fundamentals",
             "Object-Oriented Programming",
@@ -161,6 +402,7 @@ CAREER_DATABASE = {
     },
 
     "full stack developer": {
+
         "skills": [
             "HTML",
             "CSS",
@@ -170,11 +412,13 @@ CAREER_DATABASE = {
             "SQL",
             "Git"
         ],
+
         "projects": [
             "E-commerce Website",
             "Social Media Application",
             "Job Portal"
         ],
+
         "roadmap": [
             "Learn HTML and CSS",
             "Learn JavaScript",
@@ -184,6 +428,7 @@ CAREER_DATABASE = {
             "Learn REST APIs",
             "Deploy applications"
         ],
+
         "interview": [
             "HTML",
             "CSS",
@@ -195,6 +440,7 @@ CAREER_DATABASE = {
     },
 
     "data analyst": {
+
         "skills": [
             "Python",
             "SQL",
@@ -203,11 +449,13 @@ CAREER_DATABASE = {
             "Pandas",
             "NumPy"
         ],
+
         "projects": [
             "Sales Dashboard",
             "Customer Analysis",
             "Business Intelligence Dashboard"
         ],
+
         "roadmap": [
             "Learn Excel",
             "Learn SQL",
@@ -217,6 +465,7 @@ CAREER_DATABASE = {
             "Learn Power BI",
             "Build portfolio projects"
         ],
+
         "interview": [
             "SQL",
             "Excel",
@@ -228,6 +477,7 @@ CAREER_DATABASE = {
     },
 
     "data scientist": {
+
         "skills": [
             "Python",
             "SQL",
@@ -235,11 +485,13 @@ CAREER_DATABASE = {
             "NumPy",
             "Machine Learning"
         ],
+
         "projects": [
             "House Price Prediction",
             "Customer Churn Prediction",
             "Recommendation System"
         ],
+
         "roadmap": [
             "Learn Python",
             "Learn Statistics",
@@ -249,6 +501,7 @@ CAREER_DATABASE = {
             "Learn Deep Learning",
             "Build portfolio projects"
         ],
+
         "interview": [
             "Python",
             "Statistics",
@@ -260,6 +513,7 @@ CAREER_DATABASE = {
     },
 
     "machine learning engineer": {
+
         "skills": [
             "Python",
             "Machine Learning",
@@ -267,11 +521,13 @@ CAREER_DATABASE = {
             "TensorFlow",
             "SQL"
         ],
+
         "projects": [
             "Image Classification",
             "Recommendation System",
             "Prediction Model"
         ],
+
         "roadmap": [
             "Learn Python",
             "Learn Mathematics",
@@ -280,6 +536,7 @@ CAREER_DATABASE = {
             "Learn TensorFlow or PyTorch",
             "Learn Model Deployment"
         ],
+
         "interview": [
             "Machine Learning",
             "Deep Learning",
@@ -290,17 +547,20 @@ CAREER_DATABASE = {
     },
 
     "cybersecurity": {
+
         "skills": [
             "Cybersecurity",
             "Linux",
             "Networking",
             "Python"
         ],
+
         "projects": [
             "Network Security Scanner",
             "Password Security Checker",
             "Log Analysis Tool"
         ],
+
         "roadmap": [
             "Learn Networking",
             "Learn Linux",
@@ -309,6 +569,7 @@ CAREER_DATABASE = {
             "Learn Web Security",
             "Learn Security Tools"
         ],
+
         "interview": [
             "Networking",
             "Linux",
@@ -319,17 +580,20 @@ CAREER_DATABASE = {
     },
 
     "cybersecurity analyst": {
+
         "skills": [
             "Cybersecurity",
             "Linux",
             "Networking",
             "Python"
         ],
+
         "projects": [
             "Security Log Analyzer",
             "Network Monitoring Tool",
             "Vulnerability Scanner"
         ],
+
         "roadmap": [
             "Learn Networking",
             "Learn Linux",
@@ -338,6 +602,7 @@ CAREER_DATABASE = {
             "Learn SIEM concepts",
             "Learn Incident Response"
         ],
+
         "interview": [
             "Networking",
             "Linux",
@@ -348,6 +613,7 @@ CAREER_DATABASE = {
     },
 
     "cloud engineer": {
+
         "skills": [
             "AWS",
             "Linux",
@@ -355,11 +621,13 @@ CAREER_DATABASE = {
             "Docker",
             "Git"
         ],
+
         "projects": [
             "Deploy Django Application",
             "Dockerized Web Application",
             "Cloud Monitoring Project"
         ],
+
         "roadmap": [
             "Learn Linux",
             "Learn Networking",
@@ -368,6 +636,7 @@ CAREER_DATABASE = {
             "Learn Docker",
             "Learn CI/CD"
         ],
+
         "interview": [
             "Cloud Computing",
             "AWS",
@@ -378,6 +647,7 @@ CAREER_DATABASE = {
     },
 
     "devops engineer": {
+
         "skills": [
             "Linux",
             "Git",
@@ -385,11 +655,13 @@ CAREER_DATABASE = {
             "AWS",
             "Python"
         ],
+
         "projects": [
             "CI/CD Pipeline",
             "Docker Deployment",
             "Cloud Infrastructure Project"
         ],
+
         "roadmap": [
             "Learn Linux",
             "Learn Git",
@@ -398,6 +670,7 @@ CAREER_DATABASE = {
             "Learn Cloud",
             "Learn Infrastructure Automation"
         ],
+
         "interview": [
             "Linux",
             "Git",
@@ -408,6 +681,7 @@ CAREER_DATABASE = {
     },
 
     "chartered accountant": {
+
         "skills": [
             "Financial Accounting",
             "Auditing",
@@ -415,11 +689,13 @@ CAREER_DATABASE = {
             "Financial Analysis",
             "Excel"
         ],
+
         "projects": [
             "Financial Statement Analysis",
             "Cash Flow Forecasting",
             "Financial Transaction Management System"
         ],
+
         "roadmap": [
             "Learn accounting fundamentals",
             "Learn financial reporting",
@@ -428,6 +704,7 @@ CAREER_DATABASE = {
             "Gain practical experience",
             "Prepare for the relevant professional qualification"
         ],
+
         "interview": [
             "Accounting Principles",
             "Financial Statement Analysis",
@@ -448,14 +725,22 @@ def get_career_information(career):
     normalized = career.lower().strip()
 
     if normalized in CAREER_DATABASE:
-        return CAREER_DATABASE[normalized]
+
+        return CAREER_DATABASE[
+            normalized
+        ]
 
     for name, data in CAREER_DATABASE.items():
 
-        if name in normalized or normalized in name:
+        if (
+            name in normalized
+            or normalized in name
+        ):
+
             return data
 
     return {
+
         "skills": [
             "Core fundamentals",
             "Problem Solving",
@@ -463,11 +748,13 @@ def get_career_information(career):
             "Technical Skills",
             "Domain Knowledge"
         ],
+
         "projects": [
             f"{career} Portfolio Project",
             f"{career} Practical Application",
             f"{career} Capstone Project"
         ],
+
         "roadmap": [
             f"Learn {career} fundamentals",
             "Develop relevant technical skills",
@@ -476,6 +763,7 @@ def get_career_information(career):
             "Prepare for interviews",
             "Apply for internships and jobs"
         ],
+
         "interview": [
             f"{career} fundamentals",
             "Problem solving",
@@ -487,12 +775,13 @@ def get_career_information(career):
 
 
 # ============================================================
-# CLEAN GEMMA JSON
+# CLEAN GEMINI JSON
 # ============================================================
 
-def clean_gemma_json(response):
+def clean_gemini_json(response):
 
     if not response:
+
         return ""
 
     cleaned = response.strip()
@@ -515,19 +804,35 @@ def clean_gemma_json(response):
     start = cleaned.find("{")
     end = cleaned.rfind("}")
 
-    if start != -1 and end != -1 and end > start:
-        cleaned = cleaned[start:end + 1]
+    if (
+        start != -1
+        and end != -1
+        and end > start
+    ):
+
+        cleaned = cleaned[
+            start:end + 1
+        ]
 
     return cleaned.strip()
 
 
+def clean_gemma_json(response):
+
+    return clean_gemini_json(
+        response
+    )
+
+
 # ============================================================
-# GEMMA CAREER ANALYSIS
+# GEMINI CAREER ANALYSIS
 # ============================================================
 
 def generate_career_ai_analysis(career):
 
-    career_info = get_career_information(career)
+    career_info = get_career_information(
+        career
+    )
 
     prompt = f"""
 You are CareerAI, an AI career guidance assistant.
@@ -535,8 +840,6 @@ You are CareerAI, an AI career guidance assistant.
 The user searched for this career:
 
 {career}
-
-Your task is to provide useful and realistic career guidance.
 
 Known information for this career:
 
@@ -605,44 +908,84 @@ Do not include markdown.
 Do not include code fences.
 """
 
-    response = ask_gemma(prompt)
+    response = ask_gemini(
+        prompt
+    )
 
     if not response:
 
         return {
+
             "career": career,
+
             "overview": (
-                f"{career} is a professional career that "
-                "requires relevant technical knowledge, "
+                f"{career} is a professional career "
+                "that requires relevant knowledge, "
                 "problem-solving ability and practical "
                 "experience."
             ),
+
             "why_choose": (
                 "This career can provide opportunities "
                 "to develop valuable professional skills "
                 "and work on real-world problems."
             ),
-            "skills": career_info["skills"],
-            "roadmap": career_info["roadmap"],
-            "projects": career_info["projects"],
-            "interview_topics": career_info["interview"],
+
+            "skills":
+                career_info["skills"],
+
+            "roadmap":
+                career_info["roadmap"],
+
+            "projects":
+                career_info["projects"],
+
+            "interview_topics":
+                career_info["interview"],
+
             "ai_available": False
         }
 
     try:
 
-        cleaned = clean_gemma_json(response)
-        data = json.loads(cleaned)
+        cleaned = clean_gemini_json(
+            response
+        )
 
-        data.setdefault("career", career)
-        data.setdefault("overview", career_info["roadmap"][0])
+        data = json.loads(
+            cleaned
+        )
+
+        data.setdefault(
+            "career",
+            career
+        )
+
+        data.setdefault(
+            "overview",
+            career_info["roadmap"][0]
+        )
+
         data.setdefault(
             "why_choose",
             "This career offers opportunities for professional growth."
         )
-        data.setdefault("skills", career_info["skills"])
-        data.setdefault("roadmap", career_info["roadmap"])
-        data.setdefault("projects", career_info["projects"])
+
+        data.setdefault(
+            "skills",
+            career_info["skills"]
+        )
+
+        data.setdefault(
+            "roadmap",
+            career_info["roadmap"]
+        )
+
+        data.setdefault(
+            "projects",
+            career_info["projects"]
+        )
+
         data.setdefault(
             "interview_topics",
             career_info["interview"]
@@ -654,25 +997,46 @@ Do not include code fences.
 
     except Exception as e:
 
-        print("GEMMA JSON ERROR:", e)
-        print("GEMMA RAW RESPONSE:")
-        print(response)
+        print(
+            "GEMINI CAREER JSON ERROR:",
+            e
+        )
+
+        print(
+            "GEMINI RAW RESPONSE:"
+        )
+
+        print(
+            response
+        )
 
         return {
+
             "career": career,
+
             "overview": (
-                f"{career} is a career that requires "
-                "relevant professional knowledge and "
-                "practical experience."
+                f"{career} is a career that "
+                "requires relevant professional "
+                "knowledge and practical experience."
             ),
+
             "why_choose": (
                 "This career can provide opportunities "
                 "to develop useful professional skills."
             ),
-            "skills": career_info["skills"],
-            "roadmap": career_info["roadmap"],
-            "projects": career_info["projects"],
-            "interview_topics": career_info["interview"],
+
+            "skills":
+                career_info["skills"],
+
+            "roadmap":
+                career_info["roadmap"],
+
+            "projects":
+                career_info["projects"],
+
+            "interview_topics":
+                career_info["interview"],
+
             "ai_available": False
         }
 
@@ -685,9 +1049,21 @@ def register_view(request):
 
     if request.method == "POST":
 
-        username = request.POST.get("username", "").strip()
-        email = request.POST.get("email", "").strip()
-        password = request.POST.get("password", "")
+        username = request.POST.get(
+            "username",
+            ""
+        ).strip()
+
+        email = request.POST.get(
+            "email",
+            ""
+        ).strip()
+
+        password = request.POST.get(
+            "password",
+            ""
+        )
+
         confirm_password = request.POST.get(
             "confirm_password",
             ""
@@ -715,7 +1091,9 @@ def register_view(request):
                 }
             )
 
-        if User.objects.filter(username=username).exists():
+        if User.objects.filter(
+            username=username
+        ).exists():
 
             return render(
                 request,
@@ -732,11 +1110,19 @@ def register_view(request):
             password=password
         )
 
-        login(request, user)
+        login(
+            request,
+            user
+        )
 
-        return redirect("home")
+        return redirect(
+            "home"
+        )
 
-    return render(request, "register.html")
+    return render(
+        request,
+        "register.html"
+    )
 
 
 # ============================================================
@@ -765,9 +1151,14 @@ def login_view(request):
 
         if user is not None:
 
-            login(request, user)
+            login(
+                request,
+                user
+            )
 
-            return redirect("home")
+            return redirect(
+                "home"
+            )
 
         return render(
             request,
@@ -778,7 +1169,10 @@ def login_view(request):
             }
         )
 
-    return render(request, "login.html")
+    return render(
+        request,
+        "login.html"
+    )
 
 
 # ============================================================
@@ -789,7 +1183,9 @@ def logout_view(request):
 
     logout(request)
 
-    return redirect("home")
+    return redirect(
+        "home"
+    )
 
 
 # ============================================================
@@ -801,11 +1197,15 @@ def history(request):
 
     resumes = ResumeAnalysis.objects.filter(
         user=request.user
-    ).order_by("-analyzed_at")
+    ).order_by(
+        "-analyzed_at"
+    )
 
     searches = CareerSearch.objects.filter(
         user=request.user
-    ).order_by("-searched_at")
+    ).order_by(
+        "-searched_at"
+    )
 
     return render(
         request,
@@ -818,6 +1218,57 @@ def history(request):
 
 
 # ============================================================
+# VIEW RESUME FROM HISTORY
+# ============================================================
+
+@login_required
+def view_resume(
+    request,
+    resume_id
+):
+
+    try:
+
+        resume = ResumeAnalysis.objects.get(
+            id=resume_id,
+            user=request.user
+        )
+
+    except ResumeAnalysis.DoesNotExist:
+
+        raise Http404(
+            "Resume not found."
+        )
+
+    if not resume.resume:
+
+        raise Http404(
+            "Resume file not found."
+        )
+
+    try:
+
+        file_path = resume.resume.path
+
+        return FileResponse(
+            open(
+                file_path,
+                "rb"
+            ),
+            as_attachment=False,
+            filename=Path(
+                file_path
+            ).name
+        )
+
+    except FileNotFoundError:
+
+        raise Http404(
+            "Resume file is no longer available."
+        )
+
+
+# ============================================================
 # PDF EXTRACTION
 # ============================================================
 
@@ -827,18 +1278,27 @@ def extract_pdf_text(file_path):
 
     try:
 
-        reader = PdfReader(file_path)
+        reader = PdfReader(
+            file_path
+        )
 
         for page in reader.pages:
 
             page_text = page.extract_text()
 
             if page_text:
-                text += page_text + "\n"
+
+                text += (
+                    page_text
+                    + "\n"
+                )
 
     except Exception as e:
 
-        print("PDF EXTRACTION ERROR:", e)
+        print(
+            "PDF EXTRACTION ERROR:",
+            e
+        )
 
     return text.strip()
 
@@ -853,12 +1313,18 @@ def extract_docx_text(file_path):
 
     try:
 
-        document = Document(file_path)
+        document = Document(
+            file_path
+        )
 
         for paragraph in document.paragraphs:
 
             if paragraph.text.strip():
-                text += paragraph.text + "\n"
+
+                text += (
+                    paragraph.text
+                    + "\n"
+                )
 
         for table in document.tables:
 
@@ -867,11 +1333,18 @@ def extract_docx_text(file_path):
                 for cell in row.cells:
 
                     if cell.text.strip():
-                        text += cell.text + "\n"
+
+                        text += (
+                            cell.text
+                            + "\n"
+                        )
 
     except Exception as e:
 
-        print("DOCX EXTRACTION ERROR:", e)
+        print(
+            "DOCX EXTRACTION ERROR:",
+            e
+        )
 
     return text.strip()
 
@@ -882,13 +1355,21 @@ def extract_docx_text(file_path):
 
 def extract_resume_text(file_path):
 
-    extension = Path(file_path).suffix.lower()
+    extension = Path(
+        file_path
+    ).suffix.lower()
 
     if extension == ".pdf":
-        return extract_pdf_text(file_path)
+
+        return extract_pdf_text(
+            file_path
+        )
 
     if extension == ".docx":
-        return extract_docx_text(file_path)
+
+        return extract_docx_text(
+            file_path
+        )
 
     return ""
 
@@ -916,74 +1397,195 @@ def normalize_text(text):
 
 SKILLS = {
 
-    "Python": ["python"],
-    "Java": ["java"],
-    "JavaScript": ["javascript", "js"],
-    "TypeScript": ["typescript"],
-    "HTML": ["html"],
-    "CSS": ["css"],
-    "React": ["react", "reactjs", "react.js"],
-    "Django": ["django"],
-    "Flask": ["flask"],
-    "FastAPI": ["fastapi"],
-    "Node.js": ["node.js", "nodejs"],
-    "SQL": ["sql"],
-    "MySQL": ["mysql"],
-    "PostgreSQL": ["postgresql", "postgres"],
-    "MongoDB": ["mongodb", "mongo"],
-    "SQLite": ["sqlite"],
-    "Git": ["git"],
-    "GitHub": ["github"],
-    "Docker": ["docker"],
-    "AWS": ["aws", "amazon web services"],
-    "Azure": ["azure"],
+    "Python": [
+        "python"
+    ],
+
+    "Java": [
+        "java"
+    ],
+
+    "JavaScript": [
+        "javascript",
+        "js"
+    ],
+
+    "TypeScript": [
+        "typescript"
+    ],
+
+    "HTML": [
+        "html"
+    ],
+
+    "CSS": [
+        "css"
+    ],
+
+    "React": [
+        "react",
+        "reactjs",
+        "react.js"
+    ],
+
+    "Django": [
+        "django"
+    ],
+
+    "Flask": [
+        "flask"
+    ],
+
+    "FastAPI": [
+        "fastapi"
+    ],
+
+    "Node.js": [
+        "node.js",
+        "nodejs"
+    ],
+
+    "SQL": [
+        "sql"
+    ],
+
+    "MySQL": [
+        "mysql"
+    ],
+
+    "PostgreSQL": [
+        "postgresql",
+        "postgres"
+    ],
+
+    "MongoDB": [
+        "mongodb",
+        "mongo"
+    ],
+
+    "SQLite": [
+        "sqlite"
+    ],
+
+    "Git": [
+        "git"
+    ],
+
+    "GitHub": [
+        "github"
+    ],
+
+    "Docker": [
+        "docker"
+    ],
+
+    "AWS": [
+        "aws",
+        "amazon web services"
+    ],
+
+    "Azure": [
+        "azure"
+    ],
+
     "Machine Learning": [
         "machine learning",
         "machine-learning"
     ],
+
     "Deep Learning": [
         "deep learning",
         "deep-learning"
     ],
+
     "Artificial Intelligence": [
         "artificial intelligence",
         "ai"
     ],
+
     "Data Science": [
         "data science",
         "data analytics"
     ],
-    "Pandas": ["pandas"],
-    "NumPy": ["numpy"],
-    "TensorFlow": ["tensorflow"],
-    "PyTorch": ["pytorch"],
-    "Power BI": ["power bi"],
-    "Excel": ["excel", "microsoft excel"],
-    "C++": ["c++"],
-    "C#": ["c#"],
-    "Kotlin": ["kotlin"],
-    "Swift": ["swift"],
-    "PHP": ["php"],
+
+    "Pandas": [
+        "pandas"
+    ],
+
+    "NumPy": [
+        "numpy"
+    ],
+
+    "TensorFlow": [
+        "tensorflow"
+    ],
+
+    "PyTorch": [
+        "pytorch"
+    ],
+
+    "Power BI": [
+        "power bi"
+    ],
+
+    "Excel": [
+        "excel",
+        "microsoft excel"
+    ],
+
+    "C++": [
+        "c++"
+    ],
+
+    "C#": [
+        "c#"
+    ],
+
+    "Kotlin": [
+        "kotlin"
+    ],
+
+    "Swift": [
+        "swift"
+    ],
+
+    "PHP": [
+        "php"
+    ],
+
     "REST API": [
         "rest api",
         "restful api"
     ],
-    "Linux": ["linux"],
+
+    "Linux": [
+        "linux"
+    ],
+
     "Networking": [
         "networking",
         "computer networking"
     ],
+
     "Cybersecurity": [
         "cybersecurity",
         "cyber security",
         "information security"
     ],
+
     "Problem Solving": [
         "problem solving",
         "problem-solving"
     ],
-    "Communication": ["communication"],
-    "Leadership": ["leadership"],
+
+    "Communication": [
+        "communication"
+    ],
+
+    "Leadership": [
+        "leadership"
+    ],
+
     "Teamwork": [
         "teamwork",
         "team work"
@@ -1077,7 +1679,9 @@ CAREER_REQUIREMENTS = {
 
 def detect_skills(text):
 
-    normalized = normalize_text(text)
+    normalized = normalize_text(
+        text
+    )
 
     detected = []
 
@@ -1085,11 +1689,15 @@ def detect_skills(text):
 
         for keyword in keywords:
 
-            keyword_normalized = normalize_text(keyword)
+            keyword_normalized = normalize_text(
+                keyword
+            )
 
             pattern = (
                 r"(?<!\w)"
-                + re.escape(keyword_normalized)
+                + re.escape(
+                    keyword_normalized
+                )
                 + r"(?!\w)"
             )
 
@@ -1098,7 +1706,10 @@ def detect_skills(text):
                 normalized
             ):
 
-                detected.append(skill)
+                detected.append(
+                    skill
+                )
+
                 break
 
     return detected
@@ -1108,13 +1719,19 @@ def detect_skills(text):
 # CAREER MATCHING
 # ============================================================
 
-def calculate_career_matches(detected_skills):
+def calculate_career_matches(
+    detected_skills
+):
 
-    detected_set = set(detected_skills)
+    detected_set = set(
+        detected_skills
+    )
 
     results = []
 
-    for career, required_skills in CAREER_REQUIREMENTS.items():
+    for career, required_skills in (
+        CAREER_REQUIREMENTS.items()
+    ):
 
         matched = [
             skill
@@ -1128,11 +1745,15 @@ def calculate_career_matches(detected_skills):
             if skill not in detected_set
         ]
 
-        total = len(required_skills)
+        total = len(
+            required_skills
+        )
 
         score = (
             round(
-                len(matched) / total * 100
+                len(matched)
+                / total
+                * 100
             )
             if total
             else 0
@@ -1159,9 +1780,14 @@ def calculate_career_matches(detected_skills):
 # RESUME SUMMARY
 # ============================================================
 
-def create_summary(text, detected_skills):
+def create_summary(
+    text,
+    detected_skills
+):
 
-    word_count = len(text.split())
+    word_count = len(
+        text.split()
+    )
 
     if word_count == 0:
 
@@ -1199,7 +1825,9 @@ def create_summary(text, detected_skills):
 
 def analyze_resume_quality(text):
 
-    normalized = normalize_text(text)
+    normalized = normalize_text(
+        text
+    )
 
     strengths = []
     suggestions = []
@@ -1212,10 +1840,13 @@ def analyze_resume_quality(text):
     )
 
     if email_found:
+
         strengths.append(
             "Professional email address detected."
         )
+
     else:
+
         suggestions.append(
             "Add a professional email address."
         )
@@ -1228,10 +1859,13 @@ def analyze_resume_quality(text):
     )
 
     if phone_found:
+
         strengths.append(
             "Phone number detected."
         )
+
     else:
+
         suggestions.append(
             "Add a phone number."
         )
@@ -1330,7 +1964,9 @@ def analyze_resume_quality(text):
 
         action_count += len(
             re.findall(
-                r"\b" + verb + r"\b",
+                r"\b"
+                + verb
+                + r"\b",
                 normalized
             )
         )
@@ -1368,7 +2004,9 @@ def analyze_resume_quality(text):
             "performance improvements, or results."
         )
 
-    word_count = len(text.split())
+    word_count = len(
+        text.split()
+    )
 
     if word_count < 150:
 
@@ -1390,7 +2028,10 @@ def analyze_resume_quality(text):
             "Resume length appears reasonable."
         )
 
-    return strengths, suggestions
+    return (
+        strengths,
+        suggestions
+    )
 
 
 # ============================================================
@@ -1438,7 +2079,7 @@ def create_interview_questions(
 
 
 # ============================================================
-# GEMMA RESUME ANALYSIS
+# GEMINI RESUME ANALYSIS
 # ============================================================
 
 def generate_resume_ai_analysis(
@@ -1530,21 +2171,38 @@ Important:
 - Do not include code fences.
 """
 
-    response = ask_gemma(prompt)
+    response = ask_gemini(
+        prompt
+    )
 
     if not response:
+
         return None
 
     try:
 
-        cleaned = clean_gemma_json(response)
+        cleaned = clean_gemini_json(
+            response
+        )
 
-        return json.loads(cleaned)
+        return json.loads(
+            cleaned
+        )
 
     except Exception as e:
 
-        print("GEMMA RESUME JSON ERROR:", e)
-        print("GEMMA RESPONSE:", response)
+        print(
+            "GEMINI RESUME JSON ERROR:",
+            e
+        )
+
+        print(
+            "GEMINI RESPONSE:"
+        )
+
+        print(
+            response
+        )
 
         return None
 
@@ -1567,7 +2225,9 @@ def resume_analyzer(request):
             }
         )
 
-    uploaded_file = request.FILES.get("resume")
+    uploaded_file = request.FILES.get(
+        "resume"
+    )
 
     if not uploaded_file:
 
@@ -1576,7 +2236,8 @@ def resume_analyzer(request):
             "resume.html",
             {
                 "analysis": None,
-                "error": "Please select a resume file."
+                "error":
+                    "Please select a resume file."
             }
         )
 
@@ -1601,18 +2262,10 @@ def resume_analyzer(request):
             }
         )
 
-    # --------------------------------------------------------
-    # SAVE RESUME
-    # --------------------------------------------------------
-
     resume_analysis = ResumeAnalysis.objects.create(
         user=request.user,
         resume=uploaded_file
     )
-
-    # --------------------------------------------------------
-    # EXTRACT TEXT
-    # --------------------------------------------------------
 
     try:
 
@@ -1622,7 +2275,10 @@ def resume_analyzer(request):
 
     except Exception as e:
 
-        print("RESUME EXTRACTION ERROR:", e)
+        print(
+            "RESUME EXTRACTION ERROR:",
+            e
+        )
 
         return render(
             request,
@@ -1648,16 +2304,9 @@ def resume_analyzer(request):
             }
         )
 
-    # --------------------------------------------------------
-    # SAVE TEXT
-    # --------------------------------------------------------
-
     resume_analysis.extracted_text = resume_text
-    resume_analysis.save()
 
-    # --------------------------------------------------------
-    # LOCAL ANALYSIS
-    # --------------------------------------------------------
+    resume_analysis.save()
 
     detected_skills = detect_skills(
         resume_text
@@ -1670,20 +2319,28 @@ def resume_analyzer(request):
     if career_matches:
 
         top_career = career_matches[0]["career"]
-        missing_skills = career_matches[0]["missing"]
+
+        missing_skills = (
+            career_matches[0]["missing"]
+        )
 
     else:
 
         top_career = "Software Developer"
+
         missing_skills = []
 
-    strengths, suggestions = analyze_resume_quality(
-        resume_text
+    strengths, suggestions = (
+        analyze_resume_quality(
+            resume_text
+        )
     )
 
-    interview_questions = create_interview_questions(
-        detected_skills,
-        top_career
+    interview_questions = (
+        create_interview_questions(
+            detected_skills,
+            top_career
+        )
     )
 
     summary = create_summary(
@@ -1691,22 +2348,24 @@ def resume_analyzer(request):
         detected_skills
     )
 
-    # --------------------------------------------------------
-    # GEMMA ANALYSIS
-    # --------------------------------------------------------
+    # ========================================================
+    # GEMINI AI RESUME ANALYSIS
+    # ========================================================
 
     ai_analysis = generate_resume_ai_analysis(
+
         resume_text=resume_text,
+
         detected_skills=detected_skills,
+
         career_matches=career_matches,
+
         top_career=top_career,
+
         missing_skills=missing_skills,
+
         strengths=strengths
     )
-
-    # --------------------------------------------------------
-    # AI RESULT
-    # --------------------------------------------------------
 
     if ai_analysis:
 
@@ -1747,9 +2406,11 @@ def resume_analyzer(request):
             summary
         )
 
-        ai_interview_questions = ai_analysis.get(
-            "interview_questions",
-            interview_questions
+        ai_interview_questions = (
+            ai_analysis.get(
+                "interview_questions",
+                interview_questions
+            )
         )
 
     else:
@@ -1763,41 +2424,55 @@ def resume_analyzer(request):
         )
 
         ai_why = (
-            "The local AI service was unavailable, "
+            "The Gemini AI service was unavailable, "
             "so the rule-based career analyzer "
             "was used."
         )
 
         ai_good_fit = strengths
-        ai_skills = missing_skills
-        ai_learning_path = []
-        ai_resume_summary = summary
-        ai_interview_questions = interview_questions
 
-    # --------------------------------------------------------
-    # FINAL ANALYSIS
-    # --------------------------------------------------------
+        ai_skills = missing_skills
+
+        ai_learning_path = []
+
+        ai_resume_summary = summary
+
+        ai_interview_questions = (
+            interview_questions
+        )
+
+    # ========================================================
+    # FINAL ANALYSIS OBJECT
+    # ========================================================
 
     analysis = {
 
-        "resume": resume_analysis,
+        "resume":
+            resume_analysis,
 
-        "summary": summary,
+        "summary":
+            summary,
 
-        "skills": detected_skills,
+        "skills":
+            detected_skills,
 
-        "missing_skills": missing_skills,
+        "missing_skills":
+            missing_skills,
 
-        "career_matches": career_matches[:5],
+        "career_matches":
+            career_matches[:5],
 
-        "top_career": ai_career,
+        "top_career":
+            ai_career,
 
-        "strengths": strengths,
+        "strengths":
+            strengths,
 
-        "suggestions": suggestions,
+        "suggestions":
+            suggestions,
 
         "interview_questions":
-            ai_interview_questions,
+            interview_questions,
 
         "word_count":
             len(resume_text.split()),
@@ -1817,9 +2492,6 @@ def resume_analyzer(request):
         "career_strengths":
             ai_good_fit,
 
-        "learning_path":
-            ai_learning_path,
-
         "ai_career":
             ai_career,
 
@@ -1836,6 +2508,9 @@ def resume_analyzer(request):
             ai_skills,
 
         "ai_learning_path":
+            ai_learning_path,
+
+        "learning_path":
             ai_learning_path,
 
         "ai_resume_summary":

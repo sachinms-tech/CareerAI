@@ -6,14 +6,21 @@ from core import views
 
 urlpatterns = [
 
+    # ============================================================
     # HOME
+    # ============================================================
+
     path(
         "",
         views.home,
         name="home"
     ),
 
+
+    # ============================================================
     # AUTHENTICATION
+    # ============================================================
+
     path(
         "register/",
         views.register_view,
@@ -32,29 +39,52 @@ urlpatterns = [
         name="logout"
     ),
 
+
+    # ============================================================
     # HISTORY
+    # ============================================================
+
     path(
         "history/",
         views.history,
         name="history"
     ),
 
+
+    # ============================================================
     # RESUME ANALYZER
+    # ============================================================
+
     path(
         "resume-analyzer/",
         views.resume_analyzer,
         name="resume_analyzer"
     ),
 
-    # ALIAS
-    # This makes /resume/ work too.
+    # Alias
+    # /resume/ also opens the resume analyzer.
     path(
         "resume/",
         views.resume_analyzer,
         name="resume"
     ),
 
+
+    # ============================================================
+    # VIEW RESUME FROM HISTORY
+    # ============================================================
+
+    path(
+        "resume/<int:resume_id>/",
+        views.view_resume,
+        name="view_resume"
+    ),
+
+
+    # ============================================================
     # ADMIN
+    # ============================================================
+
     path(
         "admin/",
         admin.site.urls
