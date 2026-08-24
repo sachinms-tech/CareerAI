@@ -20,7 +20,7 @@ CareerAI helps users explore career options, analyze resumes, and keep track of 
 
 ### 🏠 CareerAI Home Page
 
-![CareerAI Home Page]("C:\Users\sachi\OneDrive\Pictures\Screenshots\Screenshot 2026-08-23 115211.png")
+![CareerAI Home Page](Screenshot 2026-08-23 115211.png)
 
 ### 🤖 AI Career Guidance
 
