@@ -28,7 +28,7 @@ CareerAI helps users explore career options, analyze resumes, and keep track of 
 
 ### 📄 Resume Analyzer / History
 
-![Resume Analyzer](C:\Users\sachi\OneDrive\Pictures\Screenshots\Screenshot 2026-08-23 115317.png)
+![Resume Analyzer](Screenshot 2026-08-23 115317.png)
 
 ---
 
