@@ -24,7 +24,7 @@ CareerAI helps users explore career options, analyze resumes, and keep track of 
 
 ### 🤖 AI Career Guidance
 
-![AI Career Guidance](C:\Users\sachi\OneDrive\Pictures\Screenshots\Screenshot 2026-08-23 115317.png)
+![AI Career Guidance](Screenshot 2026-08-23 115302.png)
 
 ### 📄 Resume Analyzer / History
 
