@@ -20,16 +20,17 @@ CareerAI helps users explore career options, analyze resumes, and keep track of 
 
 ### 🏠 CareerAI Home Page
 
-![CareerAI Home Page](Screenshot 2026-08-23 115211.png)
+![CareerAI Home Page](Screenshot%202026-08-23%20115211.png)
+
 
 ### 🤖 AI Career Guidance
 
-![AI Career Guidance](Screenshot 2026-08-23 115302.png)
+![AI Career Guidance](Screenshot%202026-08-23%20115302.png)
 
 ### 📄 Resume Analyzer / History
 
-![Resume Analyzer](Screenshot 2026-08-23 115317.png)
 
+![Resume Analyzer](Screenshot%202026-08-23%20115317.png)
 ---
 
 ## ✨ Features
